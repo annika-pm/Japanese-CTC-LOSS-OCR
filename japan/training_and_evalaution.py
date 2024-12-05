@@ -26,16 +26,15 @@ train_ds = tf.data.Dataset.from_tensor_slices((X_train, y_train)).map(encode_dat
 valid_ds = tf.data.Dataset.from_tensor_slices((X_valid, y_valid)).map(encode_data, num_parallel_calls=tf.data.AUTOTUNE).batch(batch_size).prefetch(buffer_size=tf.data.AUTOTUNE)
 test_ds = tf.data.Dataset.from_tensor_slices((X_test, y_test)).map(encode_data, num_parallel_calls=tf.data.AUTOTUNE).batch(batch_size).prefetch(buffer_size=tf.data.AUTOTUNE)
 
-char_to_ind = tf.keras.layers.StringLookup(vocabulary=list(chars), mask_token=None)
 
 # Create the model
 model = make_model(width, height, char_to_ind)
 
 ## Training loop
-epochs = 1
+epochs = 10
 history = model.fit(train_ds, epochs=epochs, validation_data=valid_ds, verbose=2)
 
-# Plot training and validation loss
+#training and validation loss graph
 plt.figure(figsize=(20, 5))
 plt.plot(range(1, len(history.history["loss"]) + 1), history.history["loss"], label="Training Loss")
 plt.plot(range(1, len(history.history["val_loss"]) + 1), history.history["val_loss"], label="Validation Loss")
@@ -44,7 +43,7 @@ plt.ylabel("Loss", fontsize=16)
 plt.legend(fontsize=14)
 plt.show()
 
-# Evaluate the model (test dataset)
+# Evaluate the model 
 test_loss = model.evaluate(test_ds, verbose=2)
 print(f"Test Loss: {test_loss}")
 
@@ -54,44 +53,44 @@ prediction_model = tf.keras.models.Model(
     model.get_layer(name="dense2").output
 )
 
-# Define a function for decoding batch predictions
+
 def decode_batch_predictions(preds, max_len):
-    # Placeholder: Adjust based on your output processing logic
+    
     pred_texts = []
     for pred in preds:
-        # Convert logits to character indices, handle unknown tokens
+        
         decoded = tf.argmax(pred, axis=-1).numpy()
         text = "".join([ind_to_char[i].numpy().decode("utf-8") for i in decoded if i != 0])
         pred_texts.append(text[:max_len])
     return pred_texts
 
-# Initialize containers for predictions and true labels
+
 y_pred = []
 y_true = []
 
 for batch in test_ds:
-    # Extract images and labels
-    batch_images, batch_labels = batch  # Unpack the dataset batch
+
+    batch_images, batch_labels = batch 
     
-    # Predict the output
+
     preds = prediction_model.predict(batch_images)
     
-    # Decode predictions
+  
     pred_texts = decode_batch_predictions(preds, max_len=max_len)
     y_pred.extend(pred_texts)
     
-    # Decode true labels
+
     orig_texts = []
     for label in batch_labels:
         label_text = tf.strings.reduce_join(ind_to_char(label))
         orig_texts.append(label_text.numpy().decode("utf-8"))
     y_true.extend(orig_texts)
 
-# Display the first 10 predictions with their corresponding true labels
+
 for i in range(10):
     print(f"True: {y_true[i]} | Predicted: {y_pred[i]}")
 
-# Define a similarity function
+
 def similarity(x, y):
     return SequenceMatcher(None, x, y).ratio()
 
