@@ -17,7 +17,7 @@ class CTCLayer(tf.keras.layers.Layer):
         self.add_loss(loss)
         return y_pred
 
-# Create the model
+#the model
 def make_model(width, height, char_to_ind):
     imgs = tf.keras.layers.Input(shape=(width, height, 1), name="image", dtype="float32")
     labels = tf.keras.layers.Input(name="label", shape=(None,), dtype="float32")
