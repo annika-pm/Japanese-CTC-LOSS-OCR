@@ -15,7 +15,7 @@ char_to_ind = tf.keras.layers.StringLookup(vocabulary=list(chars), mask_token=No
 ind_to_char = tf.keras.layers.StringLookup(vocabulary=char_to_ind.get_vocabulary(), mask_token=None, invert=True)
 
 # Load font
-font_path = "msgothic.ttc"  # Make sure to provide correct path to the font file
+font_path = "msgothic.ttc"  
 font = ImageFont.truetype(font_path, 32)
 
 # Create synthetic dataset
